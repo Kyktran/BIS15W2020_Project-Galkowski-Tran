@@ -6,33 +6,18 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
-
-## R Markdown
-
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-summary(cars)
+```{r}
+library(tidyverse)
+library(shiny)
+library(shinydashboard)
 ```
-
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
 
 ```{r}
 getwd()
 ```
 
 ```{r}
-WA<- readr::read_csv("kristen2.csv")
+WA<- readr::read_csv("AbaloneProject/AbaloneData.csv")
 ```
 
 ```{r}
@@ -111,11 +96,6 @@ var(WAcat1$`Mass_(g)`, na.rm = TRUE)
 ```
 
 
-```{r}
-WA2$Gonad_Score
-
-sum(WA2$Gonad_Score > 0 )
-```
 
 ```{r}
 str(WA)
@@ -165,9 +145,14 @@ WA %>%
   summarise(mean_lenght= mean(`Length_(mm)`))
 
 ```
+```{r}
+WA2$Gonad_Score
+
+sum(WA2$Gonad_Score > 0 )
+```
+```
 
 ```{r}
-##created a new data frame that groups trough with GCS(number of non zero gonad scores) and mean mass (MM) and Mean legnth (ML) Ill use this to make the app ((calculated all of these out by grouping by tough and summarizing by another variable))
 Trough<- c(1,2,3,4)
 GCS<- c(5,9,7,14)
 MM<- c(5.9272, 4.2424, 3.4080, 4.4500)
@@ -179,15 +164,12 @@ APP
 
 
 ```{r}
-library("shinydashboard")
 ui <- dashboardPage(
   dashboardHeader(title = "How water quality affects WA"),
   dashboardSidebar(),
   dashboardBody(
   fluidRow(
   box(title = "Plot Options", width = 3,
-  selectInput("x", "Select X Variable", choices = c("Trough"), 
-              selected = "Trough"),
   selectInput("y", "Select Y Variable", choices = c("GCS", "MM", "ML"))
   ), # close the first box
   box(title = "Plot of Water quality vs sucess", width = 7,
@@ -199,9 +181,8 @@ ui <- dashboardPage(
 
 server <- function(input, output, session) { 
   
-  # the code to make the plot of iris data grouped by species
   output$plot <- renderPlot({
-    ggplot(APP, aes_string(x = input$x, y =  input$y, fill = input$x)) + geom_col() + theme_light(base_size = 18)
+    ggplot(APP, aes_string(x = "Trough", y =  input$y)) + geom_col() + theme_light(base_size = 18)
   })
   
   # stop the app when we close it
@@ -241,15 +222,12 @@ APP2
 ```
 
 ```{r}
-library("shinydashboard")
 ui <- dashboardPage(
   dashboardHeader(title = "How water quality affects WA"),
   dashboardSidebar(),
   dashboardBody(
   fluidRow(
   box(title = "Plot Options", width = 3,
-  selectInput("x", "Select X Variable", choices = c("Trough"), 
-              selected = "Trough"),
   selectInput("y", "Select Y Variable", choices = c("GCS2", "MM2", "ML2"))
   ), # close the first box
   box(title = "Plot of Water quality vs sucess", width = 7,
@@ -263,7 +241,7 @@ server <- function(input, output, session) {
   
   # the code to make the plot of iris data grouped by species
   output$plot <- renderPlot({
-    ggplot(APP2, aes_string(x = input$x, y =  input$y, fill = input$x)) + geom_col() + theme_light(base_size = 18)
+    ggplot(APP2, aes_string(x = "Trough", y =  input$y)) + geom_col() + theme_light(base_size = 18)
   })
   
   # stop the app when we close it
