@@ -1,0 +1,290 @@
+---
+title: "white abalone"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+```{r}
+getwd()
+```
+
+```{r}
+WA<- readr::read_csv("kristen2.csv")
+```
+
+```{r}
+colnames(WA
+        )
+WA
+```
+
+```{r}
+library("tidyverse")
+library("naniar")
+```
+
+
+```{r}
+###finding mean mass for all troughs 
+WAcat1<-
+WA %>% 
+  filter(Growout_Column == "A" & Growout_Trough == "1") 
+
+mean(WAcat1$`Mass_(g)`, na.rm = TRUE)
+
+
+
+WAcat1<-
+WA %>% 
+  filter(Growout_Column == "A" & Growout_Trough == "2") 
+
+mean(WAcat1$`Mass_(g)`, na.rm = TRUE)
+
+
+WAcat1<-
+WA %>% 
+  filter(Growout_Column == "A" & Growout_Trough == "3") 
+
+mean(WAcat1$`Mass_(g)`, na.rm = TRUE)
+
+
+WAcat1<-
+WA %>% 
+  filter(Growout_Column == "A" & Growout_Trough == "4") 
+
+mean(WAcat1$`Mass_(g)`, na.rm = TRUE)
+
+
+```
+
+
+```{r}
+##finding variance of mass for all troughs
+WAcat1
+WA %>% 
+  filter(Growout_Column == "A" & Growout_Trough == "1") 
+
+var(WAcat1$`Mass_(g)`, na.rm = TRUE)
+
+WAcat1<-
+WA %>% 
+  filter(Growout_Column == "A" & Growout_Trough == "2") 
+
+var(WAcat1$`Mass_(g)`, na.rm = TRUE)
+
+WAcat1<-
+WA %>% 
+  filter(Growout_Column == "A" & Growout_Trough == "3") 
+
+var(WAcat1$`Mass_(g)`, na.rm = TRUE)
+
+WAcat1<-
+WA %>% 
+  filter(Growout_Column == "A" & Growout_Trough == "4") 
+
+var(WAcat1$`Mass_(g)`, na.rm = TRUE)
+
+
+```
+
+
+```{r}
+WA2$Gonad_Score
+
+sum(WA2$Gonad_Score > 0 )
+```
+
+```{r}
+str(WA)
+naniar::miss_var_summary(WA)
+WA
+```
+
+
+```{r}
+WA2<-
+WA %>% 
+  filter(Growout_Column == "A") %>% 
+  select(Growout_Trough, `Mass_(g)`, Gonad_Score) 
+
+  WA2 %>% 
+    group_by(Growout_Trough) %>% 
+  summarize(reproductive_individuals= sum(Gonad_Score > 0)) %>% 
+    ggplot(aes(x= Growout_Trough, y= reproductive_individuals, fill= Growout_Trough))+
+    geom_col()
+  
+WA2 %>% 
+  group_by(Growout_Trough) %>% 
+  summarize(reproductive_individuals= sum(Gonad_Score > 0 ))
+
+
+```
+```{r}
+
+WA %>% 
+  filter(Growout_Column == "A") %>% 
+  select(Growout_Trough, `Length_(mm)`, `Mass_(g)`, Gonad_Score) %>% 
+    group_by(Growout_Trough) %>% 
+  summarise(GS_score= sum(Gonad_Score > 0 ))
+
+
+WA %>% 
+  filter(Growout_Column == "A") %>% 
+  select(Growout_Trough, `Length_(mm)`, `Mass_(g)`, Gonad_Score) %>% 
+    group_by(Growout_Trough) %>% 
+  summarise(mean_mass= mean(`Mass_(g)`))
+
+
+WA %>% 
+  filter(Growout_Column == "A") %>% 
+  select(Growout_Trough, `Length_(mm)`, `Mass_(g)`, Gonad_Score) %>% 
+    group_by(Growout_Trough) %>% 
+  summarise(mean_lenght= mean(`Length_(mm)`))
+
+```
+
+```{r}
+##created a new data frame that groups trough with GCS(number of non zero gonad scores) and mean mass (MM) and Mean legnth (ML) Ill use this to make the app ((calculated all of these out by grouping by tough and summarizing by another variable))
+Trough<- c(1,2,3,4)
+GCS<- c(5,9,7,14)
+MM<- c(5.9272, 4.2424, 3.4080, 4.4500)
+ML<- c(27.072, 26.524, 22.846, 27.868)
+APP<- data_frame(Trough, GCS, MM, ML)
+APP
+```
+
+
+
+```{r}
+library("shinydashboard")
+ui <- dashboardPage(
+  dashboardHeader(title = "How water quality affects WA"),
+  dashboardSidebar(),
+  dashboardBody(
+  fluidRow(
+  box(title = "Plot Options", width = 3,
+  selectInput("x", "Select X Variable", choices = c("Trough"), 
+              selected = "Trough"),
+  selectInput("y", "Select Y Variable", choices = c("GCS", "MM", "ML"))
+  ), # close the first box
+  box(title = "Plot of Water quality vs sucess", width = 7,
+  plotOutput("plot", width = "600px", height = "500px")
+  ) # close the second box
+  ) # close the row
+  ) # close the dashboard body
+) # close the ui
+
+server <- function(input, output, session) { 
+  
+  # the code to make the plot of iris data grouped by species
+  output$plot <- renderPlot({
+    ggplot(APP, aes_string(x = input$x, y =  input$y, fill = input$x)) + geom_col() + theme_light(base_size = 18)
+  })
+  
+  # stop the app when we close it
+  session$onSessionEnded(stopApp)
+
+  }
+
+shinyApp(ui, server)
+```
+```{r}
+WA
+```
+
+
+```{r}
+### the app made me curious about amount of data in each trough so i used this code to figure out how many observations were in each trough diferences in this will skew the data
+wa2<- WA %>% 
+  filter(Growout_Column == "A") 
+  
+  sum(wa2$Growout_Trough > 0 &wa2$Growout_Trough < 2)
+sum(wa2$Growout_Trough > 1 &wa2$Growout_Trough < 3)
+sum(wa2$Growout_Trough > 2 &wa2$Growout_Trough < 4)
+sum(wa2$Growout_Trough > 3 &wa2$Growout_Trough < 5)
+
+  ## i found that there was a difference in the number of observations so this will affect the count of individuals that are reoroductive so I will fix this in the app by dividing by the sample size (Like a mean)
+  
+```
+
+```{r}
+## so this is the new data frame: 
+Trough
+GCS2<- c(5/25,9/25,7/50,14/50)
+MM2<- c(5.9272, 4.2424, 3.4080, 4.4500)
+ML2<- c(27.072, 26.524, 22.846, 27.868)
+APP2<- data_frame(Trough, GCS2, MM2, ML2)
+APP2
+```
+
+```{r}
+library("shinydashboard")
+ui <- dashboardPage(
+  dashboardHeader(title = "How water quality affects WA"),
+  dashboardSidebar(),
+  dashboardBody(
+  fluidRow(
+  box(title = "Plot Options", width = 3,
+  selectInput("x", "Select X Variable", choices = c("Trough"), 
+              selected = "Trough"),
+  selectInput("y", "Select Y Variable", choices = c("GCS2", "MM2", "ML2"))
+  ), # close the first box
+  box(title = "Plot of Water quality vs sucess", width = 7,
+  plotOutput("plot", width = "600px", height = "500px")
+  ) # close the second box
+  ) # close the row
+  ) # close the dashboard body
+) # close the ui
+
+server <- function(input, output, session) { 
+  
+  # the code to make the plot of iris data grouped by species
+  output$plot <- renderPlot({
+    ggplot(APP2, aes_string(x = input$x, y =  input$y, fill = input$x)) + geom_col() + theme_light(base_size = 18)
+  })
+  
+  # stop the app when we close it
+  session$onSessionEnded(stopApp)
+
+  }
+
+shinyApp(ui, server)
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
