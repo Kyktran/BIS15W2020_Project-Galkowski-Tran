@@ -17,7 +17,7 @@ getwd()
 ```
 
 ```{r}
-WA<- readr::read_csv("AbaloneProject/AbaloneData.csv")
+WA<- readr::read_csv("AbaloneData.csv")
 ```
 
 ```{r}
@@ -160,6 +160,7 @@ ML<- c(27.072, 26.524, 22.846, 27.868)
 APP<- data_frame(Trough, GCS, MM, ML)
 APP
 ```
+
 
 
 
