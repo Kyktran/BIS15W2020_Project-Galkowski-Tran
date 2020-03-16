@@ -1,0 +1,85 @@
+---
+title: "abobo"
+author: "me"
+date: "3/9/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+install.packages("naniar")
+install.packages("skimr")
+library(tidyverse)
+library("naniar")
+library("skimr")
+library(shiny)
+library(shinydashboard)
+```
+General analysis
+```{r}
+AbaloneData<-readr::read_csv("AbaloneData.csv")
+AbaloneData
+naniar::miss_var_summary(AbaloneData)
+```
+show analysis (apps)
+    plots/apps to show correlations with mass and through
+    correlation between sex and mass
+    plots/apps to show correlation to sex
+    show fertility(gonad score > 0)
+      (gonad score vs mass & length)
+      fertility vs sex
+      length vs mass filled by predicted sex
+      average growth -> use to compare to other factors like sex and gonad score and trough
+
+ average growth
+```{r}
+AbaloneData1<-AbaloneData %>%
+  dplyr::rename(
+    Mass_g="Mass_(g)",
+    Length_mm="Length_(mm)")%>%
+  mutate(avgGrowthRate_GperMonth = Mass_g/24)
+AbaloneData1
+```
+Mass vs Length by predicted sex shows no statistically significant evidence for a difference between sex
+otherise shows somewhat logarithmic correlation between mass in grams and length in mm
+```{r}
+AbaloneData1%>%
+  filter(Predicted_Sex == "M") %>%
+  summarise(avgMassM = mean(Mass_g))
+AbaloneData1%>%
+  filter(Predicted_Sex == "F") %>%
+  summarise(avgMassF = mean(Mass_g))
+```
+```{r}
+AbaloneData1%>%
+  filter(Predicted_Sex == "M" | Predicted_Sex == "F") %>%
+  group_by(Predicted_Sex)%>%
+  summarize(avgMass=mean(Mass_g))%>%
+  ggplot(aes(x=Predicted_Sex, y=avgMass, color = Predicted_Sex)) +
+  geom_bar(stat="identity")
+```
+```{r}
+AbaloneData1%>%
+  filter(Predicted_Sex == "M" | Predicted_Sex == "F") %>%
+  group_by(Predicted_Sex)%>%
+  summarize(avgGrowth=mean(avgGrowthRate_GperMonth))%>%
+  ggplot(aes(x=Predicted_Sex, y=avgGrowth, color = Predicted_Sex)) +
+  geom_bar(stat="identity")
+```
+
+```{r}
+AbaloneData1 %>% 
+  filter(Predicted_Sex == "M" | Predicted_Sex == "F") %>%
+  ggplot(aes(x=Length_mm, y=Mass_g, color = Predicted_Sex)) +
+  geom_jitter() + geom_smooth(se = FALSE)
+```
+```{r}
+count(AbaloneData,Predicted_Sex == "M")
+```
+
+
+
+
